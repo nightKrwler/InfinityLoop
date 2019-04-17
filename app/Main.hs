@@ -56,7 +56,7 @@ initState = Game
 
 toFloat :: Int -> Float ->Float
 toFloat 0 a = a
-toFloat a b = toFloat (a-1) (b+1)
+toFloat a b = if a>0 then toFloat (a-1) (b+1) else toFloat (a+1) (b-1)
 
 pRenderState :: [Int] -> Float -> Float -> Float -> Float -> Float -> Float -> [Picture]
 pRenderState [] x y r c px py = []
@@ -67,7 +67,7 @@ pRenderState (3:xs) x y r c px py = (if x == (toFloat (floor px) 0) && y == (toF
 pRenderState (notx:xs) x y r c px py = []
 
 renderState :: PuzzleState -> Picture
-renderState s = pictures(pRenderState (grids s) 1 1 rows' cols' (posx s) (posy s))
+renderState s = pictures(pRenderState (grids s) 1 1 rows' cols' (posx s) (posy s) ++ [text (show (posx s))])
 
 updateState :: Float -> PuzzleState -> PuzzleState
 updateState _ m = if (input m) == 1 then m{ posy = (posy m) + 0.1 } else if (input m) == 4 then m{ posy = (posy m) - 0.1 } else if (input m) == 2 then m{ posx = (posx m) + 0.1 } else if (input m) == 8 then m{ posx = (posx m) - 0.1 } else m
@@ -80,9 +80,9 @@ changeN i (a:as) = a : changeN (i-1) as
 
 handleInput :: Event -> PuzzleState -> PuzzleState
 handleInput (EventKey (SpecialKey KeyUp) (Down) _ _) game = if (posy game) < rows' then game { input = 1 } else game{ input = 0 }
-handleInput (EventKey (SpecialKey KeyDown) (Down) _ _) game = if (posy game) > 1 then game { input = 4 } else game{ input = 0 }
-handleInput (EventKey (SpecialKey KeyRight) (Down) _ _) game = if (posx game) < cols'-1 then game { input = 2 } else game{ input = 0 }
-handleInput (EventKey (SpecialKey KeyLeft) (Down) _ _) game = if (posx game) > 1 then game { input = 8 } else game{ input = 0 }
+handleInput (EventKey (SpecialKey KeyDown) (Down) _ _) game = if (posy game) >= 2 then game { input = 4 } else game{ input = 0 }
+handleInput (EventKey (SpecialKey KeyRight) (Down) _ _) game = if (posx game) < cols' then game { input = 2 } else game{ input = 0 }
+handleInput (EventKey (SpecialKey KeyLeft) (Down) _ _) game = if (posx game) >= 2 then game { input = 8 } else game{ input = 0 }
 handleInput (EventKey (SpecialKey KeyUp) (Up) _ _) game = if (input game) == 1 then game { input = 0 } else game
 handleInput (EventKey (SpecialKey KeyDown) (Up) _ _) game = if (input game) == 4 then game { input = 0 } else game
 handleInput (EventKey (SpecialKey KeyRight) (Up) _ _) game = if (input game) == 2 then game { input = 0 } else game
