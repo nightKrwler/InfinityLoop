@@ -2,7 +2,12 @@ module Main where
 
 --import State( PuzzleState(Game) )
 import CheckComplete(getNextPos, checkPuzzle)
+import PuzzleGenerator
+import Shuffle
 
+import System.Random
+import Data.Time.Clock
+import Data.Time.LocalTime
 import Graphics.Gloss
 import Graphics.Gloss.Data.Picture
 import Graphics.Gloss.Interface.Pure.Game
@@ -22,18 +27,21 @@ background:: Color
 background = red
 
 gridSize, rows, cols ::Int
-rows = 2
-cols = 2
+rows = 4
+cols = 4
 gridSize = 32
 
 gridSize', rows', cols' :: Float
 gridSize' = 32
-rows' = 2
-cols' = 2
+rows' = 4
+cols' = 4
 grid = zip [1..rows] [1..cols]
 
-eachGrid :: Float -> Float -> Int -> Color -> Picture
-eachGrid x y a bgc = scale 0.5 0.5 $ translate (x*gridSize'*3 - 200) (y*gridSize'*3 - 200) $ color bgc $ png "e1.png"
+eachGrid :: Picture -> Float -> Float -> Int -> Color -> Picture
+eachGrid pic x y a bgc = scale 0.5 0.5 $ translate (x*gridSize'*3 - 200) (y*gridSize'*3 - 200) $ color bgc $ text (show a) where
+    pict = do
+        wall <- loadBMP "./src/e0.bmp"
+        return wall
 
 merge :: [a] -> [a] -> [a]
 merge [] ys = ys
@@ -48,11 +56,21 @@ data PuzzleState = Game
     stage :: Int
     }
 
+buffer = [0|x<-[1..cols]]
+
+now = getCurrentTime
+timezone = getCurrentTimeZone
+g = do
+    now <- getCurrentTime
+    timezone <- getCurrentTimeZone
+    let (TimeOfDay hour minute second) = localTimeOfDay $ utcToLocalTime timezone now
+    return (mkStdGen minute)
+
 initState :: PuzzleState
 initState = Game
     {
-    grids = [(x+y+1) `rem` 4| x <- [1..rows], y <- [1..cols]],
-    crctConfig = [(x+y) `rem` 4| x <- [1..rows], y <- [1..cols]],
+    grids = generateRow [] buffer [] 0 1 rows' 1 g ,
+    crctConfig = [2*((x+y) `rem` 4)| x <- [1..rows], y <- [1..cols]] ,
     posx = 1,
     posy = 1,
     input = 0,
@@ -63,35 +81,23 @@ toFloat :: Int -> Float ->Float
 toFloat 0 a = a
 toFloat a b = if a>0 then toFloat (a-1) (b+1) else toFloat (a+1) (b-1)
 
-pRenderState :: [Int] -> Float -> Float -> Float -> Float -> Float -> Float -> [Picture]
-pRenderState [] x y r c px py = []
-pRenderState (a:xs) x y r c px py = (if x == (toFloat (floor px) 0) && y == (toFloat (floor py) 0) then ([eachGrid x y a green]) else ([eachGrid x y a white])) ++ (pRenderState xs (fst (getNextPos x y r c)) (snd (getNextPos x y r c)) r c px py)
+pRenderState :: Picture -> [Int] -> Float -> Float -> Float -> Float -> Float -> Float -> [Picture]
+pRenderState pic [] x y r c px py = []
+pRenderState pic (a:xs) x y r c px py = (if x == (toFloat (floor px) 0) && y == (toFloat (floor py) 0) then ([eachGrid pic x y a green]) else ([eachGrid pic x y a white])) ++ (pRenderState pic xs (fst (getNextPos x y r c)) (snd (getNextPos x y r c)) r c px py)
 
-renderState :: PuzzleState -> Picture
-renderState s = pictures(pRenderState (grids s) 1 1 rows' cols' (posx s) (posy s))
+renderState :: Picture -> PuzzleState -> Picture
+renderState a s = if tempStage == 1 then pictures(pRenderState a (grids s) 1 1 rows' cols' (posx s) (posy s))
+    else rectangleSolid gridSize' gridSize' where
+        tempStage = (stage s)
 
 updateState :: Float -> PuzzleState -> PuzzleState
-updateState _ m = if (input m) == 1 && (posy m) < rows' then m{ posy = (posy m) + 0.1 } 
-    else if (input m) == 4 && (posy m) >= 2 then m{ posy = (posy m) - 0.1 } 
-    else if (input m) == 2 && (posx m) < cols' then m{ posx = (posx m) + 0.1 } 
-    else if (input m) == 8 && (posx m) >= 2 then m{ posx = (posx m) - 0.1 } 
-    else m
-
-trans :: Int -> Int
-trans 0 = 0
-trans 1 = 2
-trans 2 = 4
-trans 4 = 8
-trans 8 = 1
-trans 3 = 6
-trans 6 = 12
-trans 12 = 9
-trans 9 = 3
-trans 7 = 14
-trans 14 = 13
-trans 13 = 11
-trans 11 = 7
-trans a = a
+updateState _ m = if checkPuzzle (grids m) (crctConfig m) then m{stage = 2}
+    else if tempIn == 1 && (posy m) < rows' then m{ posy = (posy m) + 0.1 } 
+    else if tempIn == 4 && (posy m) >= 2 then m{ posy = (posy m) - 0.1 } 
+    else if tempIn == 2 && (posx m) < cols' then m{ posx = (posx m) + 0.1 } 
+    else if tempIn == 8 && (posx m) >= 2 then m{ posx = (posx m) - 0.1 } 
+    else m where
+        tempIn = (input m)
 
 changeN :: Float -> [Int] -> [Int]
 changeN _ [] = []
@@ -115,7 +121,8 @@ fps :: Int
 fps = 60
 
 main :: IO ()
-main =
-    play window background fps initState renderState handleInput updateState
+main = do
+        wall <- loadBMP "./src/shapes/e0.bmp"
+        play window background fps initState (renderState wall) handleInput updateState
 
 
