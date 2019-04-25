@@ -18,6 +18,8 @@ trans 7 = 14
 trans 14 = 13
 trans 13 = 11
 trans 11 = 7
+trans 5 = 10
+trans 10 = 5
 trans a = a
 
 turn :: Int -> Int -> Int--randomint,piece 
