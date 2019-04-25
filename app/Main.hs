@@ -66,7 +66,7 @@ initState = Game{
     caption = "",
     moves = 0,
     best = 0,
-    randGen = mkStdGen 66,
+    randGen = mkStdGen 9,
     gridPics = []
 }
 
