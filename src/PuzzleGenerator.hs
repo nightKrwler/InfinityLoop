@@ -32,8 +32,8 @@ puzzle = []
 prevRow = [1,0]
 bufferRow = []
 
-generateRow  :: [Int] -> [Int] -> [Int] -> Int -> Float -> Float -> Float -> StdGen -> [Int] -- Puzzle, bufferow, presrow, lastpiece in row, maxrowno.,colno.,gen give new row
-generateRow x [] b d row mrow col g' = if row<mrow then (generateRow (x++b) b [] 0 (row+1) mrow 1 g') else x++b
+generateRow  :: [Int] -> [Int] -> [Int] -> Int -> Float -> Float -> Float -> StdGen -> ([Int], StdGen) -- Puzzle, bufferow, presrow, lastpiece in row, rowno., maxrowno.,colno.,gen give new row
+generateRow x [] b d row mrow col g' = if row<mrow then (generateRow (x++b) b [] 0 (row+1) mrow 1 g') else (x++b, g')
 generateRow x (a:as) d b rows mrow col g' = (generateRow x as (d++[c]) c rows mrow (col+1) g2) where
     (tc, g2) = randomR (0,3) g'
     tb = tunnel "r" b

@@ -12,6 +12,8 @@ getNextPos x y r c =
 
 checkPuzzle :: [Int] -> [Int] -> Bool
 checkPuzzle [] [] = True
+checkPuzzle a [] = False
+checkPuzzle [] a = False
 checkPuzzle (a:as) (b:bs) = if a == b then checkPuzzle as bs else False
 
 
