@@ -3,7 +3,7 @@ module Shuffle
     ) where
 
 import System.Random
-
+--  | Function to translate one piece to another piece
 trans :: Int -> Int
 trans 0 = 0
 trans 1 = 2
@@ -21,14 +21,14 @@ trans 11 = 7
 trans 5 = 10
 trans 10 = 5
 trans a = a
-
+--  | Function to rotate one piece to another piece
 turn :: Int -> Int -> Int--randomint,piece 
 turn 0 b = b
 turn 1 b = trans b
 turn 2 b = trans (trans b)
 turn 3 b = trans (trans (trans b))
 turn a b = turn (a`rem` 4) b
-
+--  | Takes a complete puzzle as input and shuffles it
 shuffle:: [Int] -> StdGen -> [Int]
 shuffle [] g = []
 shuffle (a:as) g = (turn b a):(shuffle as g2) where

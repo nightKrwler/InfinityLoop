@@ -33,7 +33,7 @@ gridSize = 48
 
 gridSize' :: Float
 gridSize' = 48
-
+-- | Generates one grid of puzzle
 eachGrid :: Picture -> Float -> Float -> Int -> Color -> Picture
 eachGrid pics x y a bgc = translate (x*gridSize'+x) (y*gridSize'+y) $ color bgc $ pics where
 
@@ -76,11 +76,11 @@ toFloat a b = if a>0 then toFloat (a-1) (b+1) else toFloat (a+1) (b-1)
 
 high = rectangleWire 48 48
 
-
+-- | Generates whole puzzle
 pRenderState :: [Picture] -> [Int] -> Float -> Float -> Float -> Float -> Float -> Float -> [Picture]
-pRenderState pic [] x y r c px py = []
+pRenderState pic [] x y r c px py = [ text "Moves"]
 pRenderState pic (a:xs) x y r c px py = (if x == (toFloat (floor px) 0) && y == (toFloat (floor py) 0) then ([eachGrid (pic!!(a+5)) x y a green]++[eachGrid high x y a white]) else ([eachGrid (pic!!(a+5)) x y a black])) ++ (pRenderState pic xs (fst (getNextPos x y r c)) (snd (getNextPos x y r c)) r c px py)
-
+-- | Function to load all screens
 renderState :: [Picture] -> PuzzleState -> Picture
 renderState a s =
     if tempStage == 0 then a!!0
@@ -96,11 +96,19 @@ generatePuzzle x y b d row mrow col g' = (puz, shufpuz, newgen) where
     (puz, newgen) = generateRow x y b d row mrow col g'
     shufpuz = shuffle puz newgen
 
+checkSame:: [Int]->[Int]->Bool
+checkSame [] [] = True
+checkSame [] a = False
+checkSame a [] = False 
+checkSame (a:as) (b:bs) = if a==b then checkSame as bs else False
+
 -- Make movement more smooth
+-- | Takes an old state and gives a new state 
 updateState :: Float -> PuzzleState -> PuzzleState
 updateState s m =
     if st == 5 then m{crctConfig = temp1, grids = temp2 , randGen = temp3, stage = 3.4}
-    else if checkPuzzle (grids m) (crctConfig m) then m{stage = 4}
+    else if (checkSame (grids m) (crctConfig m)) then m{stage = 4}
+    else if (checkPuzzle (grids m) buffer [] 0 1 rows' 1 ) then m{stage = 4}
     else if tempIn == 1 && (posy m) < rows' then m{ posy = (posy m) + 3*s } 
     else if tempIn == 4 && (posy m) >= 2 then m{ posy = (posy m) - 3*s } 
     else if tempIn == 2 && (posx m) < cols' then m{ posx = (posx m) + 3*s } 
@@ -110,7 +118,7 @@ updateState s m =
         st = (stage m)
         rows' = (toFloat (rows m) 0)
         cols' = (toFloat (cols m) 0)
-        buffer = [0|x<-[1..cols']]
+        buffer = [0|x<-[1..(cols m)]]
         (temp1, temp2, temp3) = if st == 5 then (generatePuzzle [] buffer [] 0 1 rows' 1 (randGen m))
             else ([0], [0], g)
 
@@ -121,6 +129,7 @@ changeN i (a:as) = a : changeN (i-1) as
 
 --stage 1 2 3 1.x 2.x 3.x are levels, 0 start page, 4 complted puzzle, 5 loading random puzzle
 -- 6 loaded rand puzzle
+-- Function takes the input from the user and updates the window accordingly
 handleInput :: Event -> PuzzleState -> PuzzleState
 handleInput (EventKey (SpecialKey KeyUp) (Down) _ _) game = game { input = 1 }
 handleInput (EventKey (SpecialKey KeyDown) (Down) _ _) game = game { input = 4 }
