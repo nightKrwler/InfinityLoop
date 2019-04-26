@@ -10,10 +10,17 @@ getNextPos x y r c =
     else
         ((x+1), y)
 
+
+--Whole puzzle, buffer of prev row, buffer of presrow read already, last piece read
 checkPuzzle :: [Int] -> [Int] -> Bool
+checkPuzzle [] [] a = True
+{-
 checkPuzzle [] [] = True
 checkPuzzle a [] = False
 checkPuzzle [] a = False
 checkPuzzle (a:as) (b:bs) = if a == b then checkPuzzle as bs else False
+-}
+checkPuzzle p:ps b:bs presrow  = checkPuzzle
+
 
 
