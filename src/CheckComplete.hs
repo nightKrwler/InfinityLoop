@@ -16,6 +16,7 @@ checkPieces::Int->Int->Int->Bool
 checkPieces a da pa = if ((tunnel "u" da) == (tunnel "d" a)) && ((tunnel "r" pa) == (tunnel "l" a)) then True else False
 
 --Whole puzzle, buffer of prev row, buffer of presrow read already, last piece read
+-- Checks whether the puzzle is complete
 checkPuzzle :: [Int] -> [Int] -> [Int] -> Int -> Float -> Float -> Float -> Bool
 {-
 checkPuzzle [] [] = True
