@@ -20,7 +20,7 @@ isOnEdge a b (1, y) = True
 isOnEdge a b (x, 1) = True
 isOnEdge a b (x, y) = if a == x||b == y then True
     else False
-
+-- | Checks the connection in a puzzle piece
 tunnel :: [Char] -> Int -> Int
 tunnel "u" b = if b `rem` 2 == 0 then 0 else 4
 tunnel "r" b = if b `rem` 4 == b `rem` 2 then 0 else 8
@@ -33,6 +33,7 @@ prevRow = [1,0]
 bufferRow = []
 
 -- Puzzle, bufferow, presrow, lastpiece in row, rowno., maxrowno.,colno.,gen give new row
+-- | Takes Puzzle, bufferow, presrow, lastpiece in row, rowno., maxrowno.,colno. as inputs and generates a puzzle
 generateRow  :: [Int] -> [Int] -> [Int] -> Int -> Float -> Float -> Float -> StdGen -> ([Int], StdGen)
 generateRow x [] b d row mrow col g' = if row<mrow then (generateRow (x++b) b [] 0 (row+1) mrow 1 g') else (x++b, g')
 generateRow x (a:as) b d rows mrow col g' = (generateRow x as (b++[c]) c rows mrow (col+1) g2) where
