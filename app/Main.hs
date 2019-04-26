@@ -78,7 +78,7 @@ high = rectangleWire 48 48
 
 
 pRenderState :: [Picture] -> [Int] -> Float -> Float -> Float -> Float -> Float -> Float -> [Picture]
-pRenderState pic [] x y r c px py = []
+pRenderState pic [] x y r c px py = [ text "Moves"]
 pRenderState pic (a:xs) x y r c px py = (if x == (toFloat (floor px) 0) && y == (toFloat (floor py) 0) then ([eachGrid (pic!!(a+5)) x y a green]++[eachGrid high x y a white]) else ([eachGrid (pic!!(a+5)) x y a black])) ++ (pRenderState pic xs (fst (getNextPos x y r c)) (snd (getNextPos x y r c)) r c px py)
 
 renderState :: [Picture] -> PuzzleState -> Picture
@@ -96,11 +96,18 @@ generatePuzzle x y b d row mrow col g' = (puz, shufpuz, newgen) where
     (puz, newgen) = generateRow x y b d row mrow col g'
     shufpuz = shuffle puz newgen
 
+checkSame:: [Int]->[Int]->Bool
+checkSame [] [] = True
+checkSame [] a = False
+checkSame a [] = False 
+checkSame (a:as) (b:bs) = if a==b then checkSame as bs else False
+
 -- Make movement more smooth
 updateState :: Float -> PuzzleState -> PuzzleState
 updateState s m =
     if st == 5 then m{crctConfig = temp1, grids = temp2 , randGen = temp3, stage = 3.4}
-    else if checkPuzzle (grids m) (crctConfig m) then m{stage = 4}
+    else if (checkSame (grids m) (crctConfig m)) then m{stage = 4}
+    else if (checkPuzzle (grids m) buffer [] 0 1 rows' 1 ) then m{stage = 4}
     else if tempIn == 1 && (posy m) < rows' then m{ posy = (posy m) + 3*s } 
     else if tempIn == 4 && (posy m) >= 2 then m{ posy = (posy m) - 3*s } 
     else if tempIn == 2 && (posx m) < cols' then m{ posx = (posx m) + 3*s } 
@@ -110,7 +117,7 @@ updateState s m =
         st = (stage m)
         rows' = (toFloat (rows m) 0)
         cols' = (toFloat (cols m) 0)
-        buffer = [0|x<-[1..cols']]
+        buffer = [0|x<-[1..(cols m)]]
         (temp1, temp2, temp3) = if st == 5 then (generatePuzzle [] buffer [] 0 1 rows' 1 (randGen m))
             else ([0], [0], g)
 

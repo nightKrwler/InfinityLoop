@@ -1,5 +1,5 @@
 module PuzzleGenerator
-    (generateRow
+    (generateRow, tunnel
     ) where
 
 --        up 1
@@ -7,7 +7,7 @@ module PuzzleGenerator
     --    down 4
       --  left 8
 
-import CheckComplete(getNextPos)
+--import CheckComplete(getNextPos)
 import System.Random
 
 isOnCorner :: Float -> Float -> (Float, Float) -> Bool
