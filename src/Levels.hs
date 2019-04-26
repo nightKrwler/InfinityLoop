@@ -2,7 +2,7 @@ module Levels where
 
 import System.Random
 import Graphics.Gloss
-
+-- | Data-type to store the Puzzle state
 data PuzzleState = Game{
     grids :: [Int],
     crctConfig :: [Int],
