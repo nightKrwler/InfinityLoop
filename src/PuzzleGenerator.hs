@@ -40,9 +40,11 @@ generateRow x (a:as) b d rows mrow col g' = (generateRow x as (b++[c]) c rows mr
     tb = tunnel "r" d
     ta = tunnel "u" a
     c = if rows == 1 && col == 1 then tc
-    else if rows == 1 then tc + tb
-    else if col == 1 then tc + ta
     else if rows == mrow && col == 1 then 2*(tc `rem` 2) + ta
     else if rows == mrow && as == []  then ta + tb
+    else if rows == 1 && as == [] then (tc `rem` 2) + tb
+    else if rows == 1 then tc + tb
+    else if col == 1 then tc + ta
+    else if as == [] then (tc `rem` 2) + ta + tb
     else if rows == mrow then 2*(tc `rem` 2) + tb + ta
     else tb + ta + tc
